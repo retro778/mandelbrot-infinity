@@ -6,12 +6,14 @@
 #include once "crt/math.bi"
 #include once "crt/string.bi"
 #include once "crt/stdlib.bi"
+#ifdef __FB_LINUX__
 #include once "crt/linux/unistd.bi"
+#endif
 #include once "mpfr_bindings.bi"
 
 const APP_NAME = "Mandelbrot Infinity"
 const APP_TITLE = "Mandelbrot Infinity - Deep Zoom Explorer"
-const APP_VERSION = "1.0.1"
+const APP_VERSION = "1.0.2"
 const APP_DIRNAME = "mandelbrot-infinity"
 
 '' ---- numerical rendering modes -------------------------------------------

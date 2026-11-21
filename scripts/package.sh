@@ -59,5 +59,5 @@ else
     echo "note: dpkg-deb not found, skipping the .deb"
 fi
 
-(cd dist && sha256sum * > SHA256SUMS)
+(cd dist && rm -f SHA256SUMS && sha256sum * > SHA256SUMS)
 ls -l dist

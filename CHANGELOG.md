@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.2 - 2026-11-21
+
+- 32-bit Windows version, cross-built on Linux with the Windows FreeBASIC
+  compiler under wine (`scripts/build-win32.sh`, `scripts/package-win32.sh`).
+- Platform-neutral paths: settings and bookmarks live in `%APPDATA%` on
+  Windows, exports in `%USERPROFILE%\Pictures`.
+- Start-up failures are shown in a message box on Windows and logged to
+  `log.txt`.
+
 ## 1.0.1 - 2026-11-21
 
 Packaging release; the program itself is unchanged.

@@ -181,7 +181,13 @@ function Main() as long
 	'' ---- interactive ----
 	if App_Init() = false then
 		print "Mandelbrot Infinity could not start - see the message above."
+		#ifdef __FB_WIN32__
+		'' a Windows GUI program has no console: show the reason in a dialog
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, APP_NAME, _
+			"Mandelbrot Infinity could not start:" & chr(10) & chr(10) & g_fatalMsg, 0)
+		#else
 		print "Required runtime libraries: libsdl2-2.0-0 libsdl2-ttf-2.0-0 libmpfr6 libgmp10 libpng16-16"
+		#endif
 		return 1
 	end if
 	if haveView then

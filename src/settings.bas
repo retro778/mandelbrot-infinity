@@ -10,13 +10,50 @@ dim shared g_baseDir as string      '' where assets/ and data/ live
 dim shared g_userDir as string      '' per-user config directory
 dim shared g_lastError as string
 
+dim shared g_fatalMsg as string     '' last message, shown in a dialog if start-up fails
+
+'' Messages go to stderr; on Windows (where a GUI program has no console)
+'' they are also appended to log.txt in the user directory.
 sub LogMsg(byref s as string)
+	g_fatalMsg = s
 	dim f as long = freefile
 	if open err(for output as #f) = 0 then
 		print #f, "[mandelbrot-infinity] " & s
 		close #f
 	end if
+	#ifdef __FB_WIN32__
+	if len(g_userDir) > 0 then
+		f = freefile
+		if open(g_userDir & "/log.txt" for append as #f) = 0 then
+			print #f, date & " " & time & "  " & s
+			close #f
+		end if
+	end if
+	#endif
 end sub
+
+'' Environment variable holding a directory, with forward slashes.
+function EnvDir(byref v as string) as string
+	dim s as string = environ(v)
+	for i as long = 0 to len(s) - 1
+		if s[i] = asc("\") then s[i] = asc("/")
+	next
+	while len(s) > 1 andalso right(s, 1) = "/"
+		s = left(s, len(s) - 1)
+	wend
+	return s
+end function
+
+'' The user's home folder (HOME on Linux, USERPROFILE on Windows).
+function HomeDir() as string
+	#ifdef __FB_WIN32__
+	dim h as string = EnvDir("USERPROFILE")
+	#else
+	dim h as string = EnvDir("HOME")
+	#endif
+	if len(h) = 0 then h = "."
+	return h
+end function
 
 function DirExists(byref p as string) as boolean
 	return len(dir(p, fbDirectory or fbHidden)) > 0
@@ -29,7 +66,9 @@ sub MakeDirs(byref p as string)
 		dim j as long = instr(i, p, "/")
 		dim part as string
 		if j = 0 then part = p else part = left(p, j - 1)
-		if len(part) > 0 andalso DirExists(part) = false then mkdir part
+		if len(part) > 0 andalso right(part, 1) <> ":" then
+			if DirExists(part) = false then mkdir part
+		end if
 		if j = 0 then exit do
 		i = j + 1
 	loop
@@ -37,6 +76,9 @@ end sub
 
 sub Paths_Init()
 	dim e as string = exepath
+	for i as long = 0 to len(e) - 1
+		if e[i] = asc("\") then e[i] = asc("/")
+	next
 	if DirExists(e & "/assets") orelse DirExists(e & "/data") then
 		g_baseDir = e
 	elseif DirExists(e & "/../assets") then
@@ -44,15 +86,24 @@ sub Paths_Init()
 	else
 		g_baseDir = e
 	end if
-	dim cfg as string = environ("XDG_CONFIG_HOME")
-	if len(cfg) = 0 then cfg = environ("HOME") & "/.config"
+	#ifdef __FB_WIN32__
+	dim cfg as string = EnvDir("APPDATA")
+	if len(cfg) = 0 then cfg = HomeDir()
+	#else
+	dim cfg as string = EnvDir("XDG_CONFIG_HOME")
+	if len(cfg) = 0 then cfg = HomeDir() & "/.config"
+	#endif
 	g_userDir = cfg & "/" & APP_DIRNAME
 	MakeDirs(g_userDir)
 	MakeDirs(g_userDir & "/palettes")
 end sub
 
 function CpuCount() as long
+	#ifdef __FB_WIN32__
+	dim n as long = valint(environ("NUMBER_OF_PROCESSORS"))
+	#else
 	dim n as long = sysconf(84)   '' _SC_NPROCESSORS_ONLN on Linux
+	#endif
 	if n < 1 then n = 1
 	if n > 64 then n = 64
 	return n
@@ -144,7 +195,11 @@ sub Settings_Defaults(byref s as Settings)
 	s.guardBits = 32
 	s.fixedPrec = 0
 	s.zoomSpeed = 1.5
+	#ifdef __FB_64BIT__
 	s.memLimitMB = 1024
+	#else
+	s.memLimitMB = 768          '' a 32-bit process has about 2 GB of address space
+	#endif
 	s.periodicity = 1
 	s.usePerturb = 1
 	s.useSeries = 1
@@ -164,7 +219,7 @@ sub Settings_Defaults(byref s as Settings)
 	s.exportH = 1080
 	s.exportSS = 1
 	s.exportAlpha = 0
-	s.exportDir = environ("HOME") & "/Pictures/" & APP_DIRNAME
+	s.exportDir = HomeDir() & "/Pictures/" & APP_DIRNAME
 end sub
 
 '' Force every value into its legal range (invalid config files cannot
@@ -179,7 +234,11 @@ sub Settings_Sanitize(byref s as Settings)
 	s.guardBits = ClampL(s.guardBits, 8, 512)
 	if s.fixedPrec <> 0 then s.fixedPrec = ClampL(s.fixedPrec, 64, 4000000)
 	s.zoomSpeed = ClampD(s.zoomSpeed, 1.05, 8.0)
+	#ifdef __FB_64BIT__
 	s.memLimitMB = ClampL(s.memLimitMB, 64, 65536)
+	#else
+	s.memLimitMB = ClampL(s.memLimitMB, 64, 1536)
+	#endif
 	s.maxIter = ClampL(s.maxIter, 16, 100000000)
 	s.mode = ClampL(s.mode, MODE_AUTO, MODE_PERTURB)
 	if s.palette < 0 then s.palette = 0

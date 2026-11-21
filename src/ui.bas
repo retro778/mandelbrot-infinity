@@ -30,14 +30,14 @@ sub SetColor(byval c as ulong)
 	SDL_SetRenderDrawColor(g_ren, (c shr 16) and 255, (c shr 8) and 255, c and 255, (c shr 24) and 255)
 end sub
 
-sub FillRect(byval x as long, byval y as long, byval w as long, byval h as long, byval c as ulong)
+sub GfxFill(byval x as long, byval y as long, byval w as long, byval h as long, byval c as ulong)
 	dim r as SDL_Rect
 	r.x = x : r.y = y : r.w = w : r.h = h
 	SetColor(c)
 	SDL_RenderFillRect(g_ren, @r)
 end sub
 
-sub FrameRect(byval x as long, byval y as long, byval w as long, byval h as long, byval c as ulong)
+sub GfxFrame(byval x as long, byval y as long, byval w as long, byval h as long, byval c as ulong)
 	dim r as SDL_Rect
 	r.x = x : r.y = y : r.w = w : r.h = h
 	SetColor(c)
@@ -66,14 +66,16 @@ sub Text_FlushCache()
 end sub
 
 function Font_Load(byval px as long) as boolean
-	dim cand(0 to 3) as string
+	dim cand(0 to 5) as string
+	cand(4) = EnvDir("WINDIR") & "/Fonts/consola.ttf"
+	cand(5) = EnvDir("WINDIR") & "/Fonts/cour.ttf"
 	cand(0) = g_baseDir & "/assets/fonts/DejaVuSansMono.ttf"
 	cand(1) = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
 	cand(2) = "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf"
 	cand(3) = "/usr/share/fonts/TTF/DejaVuSansMono.ttf"
 	if g_font then TTF_CloseFont(g_font) : g_font = 0
 	Text_FlushCache()
-	for i as long = 0 to 3
+	for i as long = 0 to 5
 		g_font = TTF_OpenFont(strptr(cand(i)), px)
 		if g_font then exit for
 	next
@@ -94,7 +96,7 @@ function TextW(byref s as string) as long
 	return n * g_charW
 end function
 
-sub DrawText(byval x as long, byval y as long, byref s as string, byval col as ulong = COL_TEXT)
+sub GfxText(byval x as long, byval y as long, byref s as string, byval col as ulong = COL_TEXT)
 	if len(s) = 0 orelse g_font = 0 then exit sub
 	g_tcStamp += 1
 	dim slot as long = -1, oldest as long = 0
@@ -127,8 +129,8 @@ sub DrawText(byval x as long, byval y as long, byref s as string, byval col as u
 end sub
 
 sub Panel(byval x as long, byval y as long, byval w as long, byval h as long)
-	FillRect(x, y, w, h, COL_PANEL)
-	FrameRect(x, y, w, h, COL_BORDER)
+	GfxFill(x, y, w, h, COL_PANEL)
+	GfxFrame(x, y, w, h, COL_BORDER)
 end sub
 
 '' ---- toast ------------------------------------------------------------------------
@@ -251,8 +253,8 @@ sub Menu_Draw()
 		y = (g_H - h) \ 2
 	end if
 	Panel(x, y, w, h)
-	DrawText(x + pad, y + pad, g_menu.title, COL_ACCENT)
-	FillRect(x + 1, y + pad + g_lineH + 2, w - 2, 1, COL_BORDER)
+	GfxText(x + pad, y + pad, g_menu.title, COL_ACCENT)
+	GfxFill(x + 1, y + pad + g_lineH + 2, w - 2, 1, COL_BORDER)
 	dim ry as long = y + pad + g_lineH + 6
 	g_menu.x = x : g_menu.y = y : g_menu.w = w : g_menu.h = h
 	g_menu.rowY = ry : g_menu.rows = rows
@@ -260,13 +262,13 @@ sub Menu_Draw()
 		dim i as long = g_menu.scroll + r
 		dim yy as long = ry + r * rowH
 		if g_menu.it(i).sep then
-			DrawText(x + pad, yy + 2, g_menu.it(i).label, COL_DIM)
+			GfxText(x + pad, yy + 2, g_menu.it(i).label, COL_DIM)
 			continue for
 		end if
-		if i = g_menu.sel then FillRect(x + 2, yy, w - 4, rowH, COL_SEL)
-		DrawText(x + pad, yy + 2, g_menu.it(i).label, COL_TEXT)
+		if i = g_menu.sel then GfxFill(x + 2, yy, w - 4, rowH, COL_SEL)
+		GfxText(x + pad, yy + 2, g_menu.it(i).label, COL_TEXT)
 		if len(g_menu.it(i).value) > 0 then
-			DrawText(x + w - pad - TextW(g_menu.it(i).value), yy + 2, g_menu.it(i).value, COL_ACCENT)
+			GfxText(x + w - pad - TextW(g_menu.it(i).value), yy + 2, g_menu.it(i).value, COL_ACCENT)
 		end if
 	next
 	if g_menu.n > rows then
@@ -274,10 +276,10 @@ sub Menu_Draw()
 		dim as long th = rows * rowH
 		dim as long kh = th * rows \ g_menu.n
 		dim as long ky = th * g_menu.scroll \ g_menu.n
-		FillRect(x + w - 4, ry + ky, 3, iif(kh < 8, 8, kh), COL_BORDER)
+		GfxFill(x + w - 4, ry + ky, 3, iif(kh < 8, 8, kh), COL_BORDER)
 	end if
 	if len(g_menu.hint) > 0 then
-		DrawText(x + pad, ry + rows * rowH + 4, g_menu.hint, COL_DIM)
+		GfxText(x + pad, ry + rows * rowH + 4, g_menu.hint, COL_DIM)
 	end if
 end sub
 
@@ -338,14 +340,14 @@ sub Prompt_Draw()
 	dim h as long = pad * 2 + g_lineH * 3 + 16 + iif(len(g_prompt.info) > 0, g_lineH, 0)
 	dim as long x = (g_W - w) \ 2, y = (g_H - h) \ 2
 	Panel(x, y, w, h)
-	DrawText(x + pad, y + pad, g_prompt.title, COL_ACCENT)
+	GfxText(x + pad, y + pad, g_prompt.title, COL_ACCENT)
 	dim yy as long = y + pad + g_lineH + 4
 	if len(g_prompt.info) > 0 then
-		DrawText(x + pad, yy, g_prompt.info, COL_DIM)
+		GfxText(x + pad, yy, g_prompt.info, COL_DIM)
 		yy += g_lineH
 	end if
-	FillRect(x + pad, yy, w - pad * 2, g_lineH + 8, &hFF0B0C10ul)
-	FrameRect(x + pad, yy, w - pad * 2, g_lineH + 8, COL_BORDER)
+	GfxFill(x + pad, yy, w - pad * 2, g_lineH + 8, &hFF0B0C10ul)
+	GfxFrame(x + pad, yy, w - pad * 2, g_lineH + 8, COL_BORDER)
 	'' show the tail when the text is wider than the box
 	dim maxCh as long = (w - pad * 2 - 12) \ g_charW - 1
 	dim s as string = g_prompt.txt
@@ -359,6 +361,6 @@ sub Prompt_Draw()
 		wend
 	wend
 	if cut > 0 then s = "<" & mid(s, 2)
-	DrawText(x + pad + 6, yy + 4, s & "_", COL_TEXT)
-	DrawText(x + pad, yy + g_lineH + 12, "Enter = OK    Esc = cancel    Ctrl+V = paste", COL_DIM)
+	GfxText(x + pad + 6, yy + 4, s & "_", COL_TEXT)
+	GfxText(x + pad, yy + g_lineH + 12, "Enter = OK    Esc = cancel    Ctrl+V = paste", COL_DIM)
 end sub

@@ -5,3 +5,6 @@
 *.o
 /prompt.txt
 /dist/
+/win32/deps/
+/win32/build/
+/win32/wineprefix/

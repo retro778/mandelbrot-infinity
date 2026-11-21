@@ -28,5 +28,13 @@ distributions (for example on itch.io). If you ever ship the shared
 libraries next to the executable, include their licence texts and offer the
 corresponding source code.
 
+## Windows package
+
+The Windows zip ships these libraries as separate, unmodified DLLs: SDL2 and
+SDL2_ttf (official builds; SDL2_ttf contains FreeType and HarfBuzz), and
+GMP, MPFR, libpng, zlib, `libgcc_s_dw2-1.dll` and `libwinpthread-1.dll` from
+the MSYS2 mingw32 repository, where the matching source packages are
+published. Their licence texts are in the `licenses/` folder of the zip.
+
 `include/mpfr_bindings.bi` is an original FreeBASIC translation of the
 function prototypes this program needs from `mpfr.h`.

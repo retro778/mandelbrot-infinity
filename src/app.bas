@@ -484,7 +484,7 @@ sub Settings_Adjust(byval id as long, byval d as long)
 	case 9 : g_set.threads = ClampL(g_set.threads + d, 0, 64)
 	case 10 : g_set.tileSize = ClampL(iif(d > 0, g_set.tileSize * 2, g_set.tileSize \ 2), 16, 512)
 	case 11 : g_set.previewStep = ClampL(iif(d > 0, g_set.previewStep * 2, g_set.previewStep \ 2), 1, 16)
-	case 12 : g_set.memLimitMB = ClampL(iif(d > 0, g_set.memLimitMB * 2, g_set.memLimitMB \ 2), 64, 65536)
+	case 12 : g_set.memLimitMB = iif(d > 0, g_set.memLimitMB * 2, g_set.memLimitMB \ 2)
 	case 13 : g_set.zoomSpeed = ClampD(g_set.zoomSpeed + d * 0.05, 1.05, 8.0)
 	case 14 : g_set.palette = (g_set.palette + d + g_palCount) mod g_palCount : g_recolor = true
 	case 15 : g_set.density = ClampD(g_set.density * iif(d > 0, 1.1, 1 / 1.1), 0.01, 100) : g_recolor = true
@@ -662,10 +662,10 @@ sub Draw_Help()
 	dim as long x = (g_W - w) \ 2, y = (g_H - h) \ 2
 	if y < 4 then y = 4
 	Panel(x, y, w, h)
-	DrawText(x + pad, y + pad, APP_TITLE & "  " & APP_VERSION, COL_ACCENT)
+	GfxText(x + pad, y + pad, APP_TITLE & "  " & APP_VERSION, COL_ACCENT)
 	for i as long = 0 to g_helpCount - 1
 		dim c as ulong = iif(left(g_helpLines(i), 1) = " ", COL_TEXT, COL_DIM)
-		DrawText(x + pad, y + pad + (i + 2) * g_lineH, g_helpLines(i), c)
+		GfxText(x + pad, y + pad + (i + 2) * g_lineH, g_helpLines(i), c)
 	next
 end sub
 
@@ -682,8 +682,8 @@ end function
 
 sub Draw_StatusBar()
 	dim y0 as long = g_H - g_barH
-	FillRect(0, y0, g_W, g_barH, COL_BAR)
-	FillRect(0, y0, g_W, 1, COL_BORDER)
+	GfxFill(0, y0, g_W, g_barH, COL_BAR)
+	GfxFill(0, y0, g_W, 1, COL_BORDER)
 	if g_strDirty then
 		g_strX = CoordStr(@g_view.cx)
 		g_strY = CoordStr(@g_view.cy)
@@ -691,19 +691,19 @@ sub Draw_StatusBar()
 		g_strDirty = false
 	end if
 	dim x as long = 8
-	DrawText(x, y0 + 4, "X", COL_ACCENT)
-	DrawText(x + g_charW * 2, y0 + 4, g_strX)
-	DrawText(x, y0 + 4 + g_lineH, "Y", COL_ACCENT)
-	DrawText(x + g_charW * 2, y0 + 4 + g_lineH, g_strY)
+	GfxText(x, y0 + 4, "X", COL_ACCENT)
+	GfxText(x + g_charW * 2, y0 + 4, g_strX)
+	GfxText(x, y0 + 4 + g_lineH, "Y", COL_ACCENT)
+	GfxText(x + g_charW * 2, y0 + 4 + g_lineH, g_strY)
 
 	dim y3 as long = y0 + 4 + g_lineH * 2
 	'' narrow windows get a compact third line
 	dim compact as boolean = (g_W < 150 * g_charW)
 	dim gap as long = g_charW * iif(compact, 2, 3)
 	#macro SEG(lbl, txt, col)
-		DrawText(x, y3, lbl, COL_DIM)
+		GfxText(x, y3, lbl, COL_DIM)
 		x += TextW(lbl) + g_charW
-		DrawText(x, y3, txt, col)
+		GfxText(x, y3, txt, col)
 		x += TextW(txt) + gap
 	#endmacro
 	dim zb as long = View_ZoomBits(g_view, g_imgH)
@@ -728,14 +728,14 @@ sub Draw_StatusBar()
 	dim tm as double = g_renderTime + iif(busy, timer - g_job.tStart, 0)
 	if busy then
 		dim bw as long = g_charW * iif(compact, 8, 12)
-		DrawText(x, y3, "Render", COL_DIM)
+		GfxText(x, y3, "Render", COL_DIM)
 		x += g_charW * 7
-		FillRect(x, y3 + 3, bw, g_lineH - 8, &hFF2A2E38ul)
-		FillRect(x, y3 + 3, clng(bw * p), g_lineH - 8, COL_ACCENT)
+		GfxFill(x, y3 + 3, bw, g_lineH - 8, &hFF2A2E38ul)
+		GfxFill(x, y3 + 3, clng(bw * p), g_lineH - 8, COL_ACCENT)
 		x += bw + g_charW
 		s = clng(int(p * 100)) & "%"
 		if compact = false orelse g_job.stage < 2 then s &= " " & st
-		DrawText(x, y3, s, COL_TEXT)
+		GfxText(x, y3, s, COL_TEXT)
 		x += TextW(s) + gap
 	elseif g_cancelled then
 		SEG("Render", "cancelled", COL_WARN)
@@ -755,11 +755,11 @@ sub Draw_StatusBar()
 	elseif g_job.nBad > 0 then
 		note = g_job.nBad & " unstable pixels" : noteCol = COL_WARN
 	end if
-	if x + TextW(note) + 8 < g_W then DrawText(g_W - 8 - TextW(note), y3, note, noteCol)
+	if x + TextW(note) + 8 < g_W then GfxText(g_W - 8 - TextW(note), y3, note, noteCol)
 end sub
 
 sub Draw_Fractal()
-	FillRect(0, 0, g_W, g_imgH, &hFF101018ul)
+	GfxFill(0, 0, g_W, g_imgH, &hFF101018ul)
 	if g_tex = 0 then exit sub
 	dim as double k, sx, sy
 	if ShownRelation(k, sx, sy) = false then exit sub
@@ -792,13 +792,13 @@ sub Draw_ExportOverlay()
 	dim as long w = 52 * g_charW, h = g_lineH * 5 + 12
 	dim as long x = (g_W - w) \ 2, y = (g_H - h) \ 2
 	Panel(x, y, w, h)
-	DrawText(x + g_lineH, y + g_lineH \ 2, "Exporting " & g_export.outW & " x " & g_export.outH & _
+	GfxText(x + g_lineH, y + g_lineH \ 2, "Exporting " & g_export.outW & " x " & g_export.outH & _
 		iif(g_export.ss > 1, "  (" & g_export.ss & "x supersampling)", ""), COL_ACCENT)
-	FillRect(x + g_lineH, y + g_lineH * 2, w - g_lineH * 2, g_lineH, &hFF2A2E38ul)
-	FillRect(x + g_lineH, y + g_lineH * 2, clng((w - g_lineH * 2) * p), g_lineH, COL_ACCENT)
-	DrawText(x + g_lineH, y + g_lineH * 3 + 4, clng(int(p * 100)) & "%  " & st & "   " & _
+	GfxFill(x + g_lineH, y + g_lineH * 2, w - g_lineH * 2, g_lineH, &hFF2A2E38ul)
+	GfxFill(x + g_lineH, y + g_lineH * 2, clng((w - g_lineH * 2) * p), g_lineH, COL_ACCENT)
+	GfxText(x + g_lineH, y + g_lineH * 3 + 4, clng(int(p * 100)) & "%  " & st & "   " & _
 		format(timer - g_export.job.tStart, "0.0") & " s", COL_TEXT)
-	DrawText(x + g_lineH, y + g_lineH * 4 + 4, "Esc = cancel export", COL_DIM)
+	GfxText(x + g_lineH, y + g_lineH * 4 + 4, "Esc = cancel export", COL_DIM)
 end sub
 
 sub App_Draw()
@@ -815,7 +815,7 @@ sub App_Draw()
 		dim w as long = TextW(s) + g_lineH
 		dim as long x = (g_W - w) \ 2, y = g_H - g_barH - g_lineH * 2 - 4
 		Panel(x, y, w, g_lineH + 10)
-		DrawText(x + g_lineH \ 2, y + 5, s, g_toastCol)
+		GfxText(x + g_lineH \ 2, y + 5, s, g_toastCol)
 	end if
 	SDL_RenderPresent(g_ren)
 end sub
@@ -855,10 +855,10 @@ sub Key_Menu(byval sym as long)
 				end if
 			case SDLK_e
 				Menu_Close()
-				Prompt_Open(PP_BM_EXPORT, "Export bookmarks to file", environ("HOME") & "/mandelbrot-bookmarks.ini")
+				Prompt_Open(PP_BM_EXPORT, "Export bookmarks to file", HomeDir() & "/mandelbrot-bookmarks.ini")
 			case SDLK_i
 				Menu_Close()
-				Prompt_Open(PP_BM_IMPORT, "Import bookmarks from file", environ("HOME") & "/mandelbrot-bookmarks.ini")
+				Prompt_Open(PP_BM_IMPORT, "Import bookmarks from file", HomeDir() & "/mandelbrot-bookmarks.ini")
 			end select
 		end if
 	end select
@@ -1078,7 +1078,7 @@ function App_Init() as boolean
 	SDL_SetRenderDrawBlendMode(g_ren, SDL_BLENDMODE_BLEND)
 	App_Layout()
 	if g_font = 0 then
-		LogMsg("Font missing: install fonts-dejavu-core or restore assets/fonts/DejaVuSansMono.ttf")
+		LogMsg("Font missing: restore assets/fonts/DejaVuSansMono.ttf next to the program")
 		return false
 	end if
 	Help_Init()

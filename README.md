@@ -1,12 +1,12 @@
 # Mandelbrot Infinity — Deep Zoom Explorer
 
-A native Linux Mandelbrot explorer written in FreeBASIC. It combines a fast
+A Mandelbrot explorer for Linux and Windows written in FreeBASIC. It combines a fast
 double-precision renderer with an arbitrary-precision (MPFR) reference
 renderer and a perturbation renderer, so you can zoom from the full set to
 magnifications of 10^100, 10^1000 and beyond while the picture stays
 mathematically correct.
 
-Developer: **retro778** · Licence: MIT · Version 1.0.1
+Developer: **retro778** · Licence: MIT · Version 1.0.2
 
 ![Rings around a mini-Mandelbrot at zoom 1.9e45](docs/screenshots/deep-rings.png)
 
@@ -62,21 +62,39 @@ Pre-built packages for 64-bit Linux are on the
 Debian package (MX Linux 25, Debian 13 or newer; installs a menu entry):
 
 ```sh
-sudo apt install ./mandelbrot-infinity_1.0.1_amd64.deb
+sudo apt install ./mandelbrot-infinity_1.0.2_amd64.deb
 mandelbrot-infinity
 ```
 
 Portable tarball (unpack anywhere and run):
 
 ```sh
-tar xzf mandelbrot-infinity-1.0.1-linux-x86_64.tar.gz
-cd mandelbrot-infinity-1.0.1-linux-x86_64
+tar xzf mandelbrot-infinity-1.0.2-linux-x86_64.tar.gz
+cd mandelbrot-infinity-1.0.2-linux-x86_64
 ./mandelbrot-infinity
 ```
 
 The binaries are built on Debian 13 and need glibc 2.38 or newer. On older
 systems (for example MX Linux 23 / Debian 12) build from source as described
 below. `./scripts/package.sh` recreates both packages in `dist/`.
+
+### Windows (32-bit)
+
+Download `mandelbrot-infinity-1.0.2-win32.zip`, unpack it anywhere and
+start `mandelbrot-infinity.exe`. Everything it needs (SDL2, MPFR, GMP,
+libpng and the font) is in the folder; it runs on 32-bit and 64-bit
+Windows. `mandelbrot-infinity-cli.exe` is the same program built as a
+console application, for `--render`, `--help` and the other command-line
+options.
+
+Settings and bookmarks are kept in `%APPDATA%\mandelbrot-infinity`,
+exported images in `Pictures\mandelbrot-infinity`.
+
+The Windows version is cross-built on Linux and was tested with wine (the
+full test suite and the interactive window), not on a real Windows
+machine. As a 32-bit program it is limited to about 2 GB of memory and
+its arbitrary-precision arithmetic is roughly half as fast as the 64-bit
+Linux build.
 
 ## Building from source: dependencies on MX Linux / Debian
 
@@ -107,6 +125,20 @@ The build is a single `fbc` invocation
 (`fbc -gen gcc -O 3 -mt -i include -i src src/main.bas`); the script first
 checks that the compiler and all libraries are present and prints the `apt`
 command if something is missing.
+
+### Building the Windows version (on Linux)
+
+```sh
+./scripts/build-win32.sh      # result in win32/build/
+./scripts/package-win32.sh    # adds the zip to dist/
+```
+
+This needs wine with 32-bit support and the Windows FreeBASIC package
+`FreeBASIC-1.10.1-winlibs-gcc-9.3.0` (set `FBWIN=/path/to/it` if it is not
+in `~/freebasic/`). The first run downloads the 32-bit libraries into
+`win32/deps/` (`scripts/fetch-win32-deps.sh`): SDL2 and SDL2_ttf from
+libsdl.org's GitHub releases; GMP, MPFR, libpng, zlib and the two GCC
+runtime DLLs from the MSYS2 mingw32 repository.
 
 ## Running
 
@@ -370,7 +402,8 @@ Things that matter for speed:
   input on a virtual X display (software rendering). High-DPI scaling and
   desktop-compositor fullscreen are implemented but were not tried on a
   physical HiDPI screen.
-- Linux only, by design.
+- The Windows version is 32-bit only and has been run under wine, not on
+  Windows itself.
 
 ## Files
 
