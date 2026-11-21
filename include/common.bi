@@ -11,7 +11,7 @@
 
 const APP_NAME = "Mandelbrot Infinity"
 const APP_TITLE = "Mandelbrot Infinity - Deep Zoom Explorer"
-const APP_VERSION = "1.0.0"
+const APP_VERSION = "1.0.1"
 const APP_DIRNAME = "mandelbrot-infinity"
 
 '' ---- numerical rendering modes -------------------------------------------

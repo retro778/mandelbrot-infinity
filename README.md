@@ -6,7 +6,7 @@ renderer and a perturbation renderer, so you can zoom from the full set to
 magnifications of 10^100, 10^1000 and beyond while the picture stays
 mathematically correct.
 
-Developer: **retro778** · Licence: MIT · Version 1.0.0
+Developer: **retro778** · Licence: MIT · Version 1.0.1
 
 ![Rings around a mini-Mandelbrot at zoom 1.9e45](docs/screenshots/deep-rings.png)
 
@@ -54,7 +54,31 @@ Developer: **retro778** · Licence: MIT · Version 1.0.0
 - SDL2, SDL2_ttf, MPFR, GMP, libpng, zlib.
 - Any multi-core CPU; rendering uses all cores by default.
 
-## Installation on MX Linux / Debian
+## Installing a release
+
+Pre-built packages for 64-bit Linux are on the
+[releases page](https://github.com/retro778/mandelbrot-infinity/releases).
+
+Debian package (MX Linux 25, Debian 13 or newer; installs a menu entry):
+
+```sh
+sudo apt install ./mandelbrot-infinity_1.0.1_amd64.deb
+mandelbrot-infinity
+```
+
+Portable tarball (unpack anywhere and run):
+
+```sh
+tar xzf mandelbrot-infinity-1.0.1-linux-x86_64.tar.gz
+cd mandelbrot-infinity-1.0.1-linux-x86_64
+./mandelbrot-infinity
+```
+
+The binaries are built on Debian 13 and need glibc 2.38 or newer. On older
+systems (for example MX Linux 23 / Debian 12) build from source as described
+below. `./scripts/package.sh` recreates both packages in `dist/`.
+
+## Building from source: dependencies on MX Linux / Debian
 
 Runtime and development packages:
 

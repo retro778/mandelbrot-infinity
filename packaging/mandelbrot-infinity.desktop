@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Mandelbrot Infinity
+GenericName=Fractal Explorer
+Comment=Deep zoom Mandelbrot set explorer with arbitrary precision
+Exec=mandelbrot-infinity
+Icon=mandelbrot-infinity
+Terminal=false
+Categories=Education;Science;Math;Graphics;
+Keywords=fractal;mandelbrot;zoom;

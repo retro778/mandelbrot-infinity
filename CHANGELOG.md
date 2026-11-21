@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1 - 2026-11-21
+
+Packaging release; the program itself is unchanged.
+
+- `scripts/package.sh` builds a portable tarball and a `.deb` package.
+- Desktop entry and application icon.
+- Screenshots in the README.
+
 ## 1.0.0 - 2026-11-21
 
 First release.
