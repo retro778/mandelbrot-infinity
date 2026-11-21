@@ -1,0 +1,6 @@
+/mandelbrot-infinity
+/tests/test_main
+/tests/bench
+/tools/deepfind
+*.o
+/prompt.txt
