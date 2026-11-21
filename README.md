@@ -8,6 +8,18 @@ mathematically correct.
 
 Developer: **retro778** · Licence: MIT · Version 1.0.0
 
+![Rings around a mini-Mandelbrot at zoom 1.9e45](docs/screenshots/deep-rings.png)
+
+*Rings around a mini-Mandelbrot at zoom 1.9 × 10^45, rendered by the perturbation renderer at 224 bits.*
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Home view](docs/screenshots/home.png) Home view | ![Seahorse double spiral](docs/screenshots/spiral.png) Seahorse double spiral, zoom 6 × 10^8 |
+| ![Mini-Mandelbrot of period 19](docs/screenshots/mini.png) Mini-Mandelbrot of period 19 | ![Dendrite tip at zoom 1e100](docs/screenshots/dendrite-1e100.png) Dendrite tip at zoom 10^100 |
+| ![Settings panel](docs/screenshots/settings.png) Settings panel | |
+
 ## Features
 
 - Interactive SDL2 window: resizable (minimum 800×600), fullscreen,
